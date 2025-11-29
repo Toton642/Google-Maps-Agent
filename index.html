@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Google Maps Simulation</title>
+  <!-- Add Google Cloud TTS client library -->
+  <script src="https://apis.google.com/js/api.js"></script>
+  <script src="https://apis.google.com/js/client.js"></script>
+  <style>
+    /* Basic body reset */
+    html, body {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+    }
+
+    /* Controls at top (Start, End, Show Route) */
+    #controls {
+      padding: 10px;
+      background: white;
+      position: absolute;
+      top: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 1000;
+      display: flex;
+      gap: 10px;
+    }
+    input, button {
+      padding: 8px;
+      font-size: 14px;
+    }
+
+    /* Toggle Street View and Conversation View buttons */
+    #toggle-view {
+      position: absolute;
+      top: 60px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 1000;
+    }
+    #conversation-btn {
+      position: absolute;
+      top: 110px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 1000;
+    }
+
+    /* Return button styling */
+    #return-btn {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      z-index: 2001;
+      padding: 12px 24px;
+      border-radius: 20px;
+      border: none;
+      background-color: #0fb100;
+      color: white;
+      cursor: pointer;
+      font-size: 14px;
+      transition: background-color 0.2s;
+    }
+
+    #return-btn:hover {
+      background-color: #019236;
+    }
+
+      /*******************/
+      /* Conversation View container - hidden by default       */
+      /*******************/
+      #conversation-view {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: none; /* hidden initially */
+        background: transparent; /* use live Street View beneath */
+        background-size: cover;
+        background-position: center;
+        z-index: 2000;
+      }
+
+    /* Container that holds the 3D models (the agents) */
+    #agent-3d-container {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background-color: transparent;
+      pointer-events: none;
+    }
+
+    /* Chat UI area inside the conversation view */
+    #chat-container {
+      position: absolute;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 40%;
+      padding: 20px;
+      border-radius: 12px;
+      background-color: rgba(255, 255, 255, 0.15);
+      backdrop-filter: blur(5px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      z-index: 2001;
+    }
+
+    #chat-log {
+      max-height: 300px;
+      overflow-y: auto;
+      margin-bottom: 15px;
+      padding: 10px;
+    }
+
+    .chat-message {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .chat-message.user {
+      margin: 10px 0;
+      align-items: flex-end;
+    }
+
+    .chat-message.agent1 {
+      margin: 0 10px;
+      align-items: flex-start;
+    }
+    .chat-message.agent2 {
+      margin: 10px 0;
+      align-items: flex-end;
+    }
+
+    .chat-bubble {
+      max-width: 70%;
+      border-radius: 20px;
+      word-wrap: break-word;
+      position: relative;
+      backdrop-filter: blur(5px);
+    }
+
+    .chat-bubble.user {
+      background-color: #0fb100;
+      color: white;
+      border-bottom-right-radius: 4px;
+      margin: 4px 0;
+      padding: 12px 16px;
+    }
+
+    .chat-bubble.agent1 {
+      color:white;
+      border-bottom-left-radius: 4px;
+      background-color: rgb(75, 132, 255);
+      padding: 16px 12px;
+    }
+     
+    .chat-bubble.agent2 {
+      color: white;
+      border-bottom-right-radius: 4px;
+      background-color: rgba(255, 63, 10, 0.85);
+      margin: 0 4px;
+      padding: 12px 16px;
+    }
+
+    .chat-sender {
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.9);
+      margin: 2px 8px;
+      text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+    }
+
+    #chat-input {
+      width: 80%;
+      padding: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      border-radius: 20px;
+      margin-right: 10px;
+      font-size: 14px;
+      background-color: rgba(255, 255, 255, 0.15);
+      color: white;
+      backdrop-filter: blur(5px);
+    }
+
+    #chat-input::placeholder {
+      color: rgba(255, 255, 255, 0.7);
+    }
+
+    #chat-send, #start-interaction, #pause-interaction, #resume-interaction {
+      padding: 12px 24px;
+      border-radius: 20px;
+      border: none;
+      background-color: #0fb100;
+      color: white;
+      cursor: pointer;
+      font-size: 14px;
+      transition: background-color 0.2s;
+      margin: 5px;
+    }
+
+    #chat-send:hover, #start-interaction:hover, #pause-interaction:hover, #resume-interaction:hover {
+      background-color: #019236;
+    }
+
+    .button-container {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 10px;
+    }
+    
+  </style>
+  
+  <!-- Include Three.js and GLTFLoader for 3D agents -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+</head>
+<body>
+  <div id="map" style="height: 100%; display: block; position: absolute; top:0; left:0; width:100%; height:100%; z-index: 1000;"></div>
+  <div id="street-view" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: none; z-index: 1999;"></div>
+
+  <div id="controls">
+    <select id="start" style="padding: 8px; font-size: 14px;">
+      <option value="">Select Initial Start Location</option>
+    </select>
+    <select id="final-destination" style="padding: 8px; font-size: 14px;">
+      <option value="">Select Final Destination</option>
+    </select>
+    <button onclick="handleRoute()">Start Journey</button>
+  </div>
+
+  <!-- Add Journey Progress Display -->
+  <div id="journey-progress" style="
+    position: absolute;
+    top: 80px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(255, 255, 255, 0.9);
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    z-index: 1000;
+    max-width: 80%;
+    display: none;
+  ">
+    <h3 style="margin: 0 0 10px 0; color: #333;">Journey Progress</h3>
+    <div id="current-route" style="margin-bottom: 10px;">
+      <strong>Current Route:</strong> <span id="current-segment"></span>
+    </div>
+    <div id="upcoming-locations" style="max-height: 150px; overflow-y: auto;">
+      <strong>Upcoming Locations:</strong>
+      <ul id="locations-list" style="margin: 5px 0; padding-left: 20px;"></ul>
+    </div>
+  </div>
+
+  <div id="toggle-view">
+    <button onclick="toggleStreetView()">Toggle Street View</button>
+  </div>
+
+  <!-- Return button shown when Street View is active (not conversation view) -->
+  <button id="return-street-btn" onclick="returnFromStreetView()" style="position: absolute; top: 20px; right: 20px; z-index: 2001; padding: 10px 18px; border-radius: 18px; border: none; background:#1976d2; color:#fff; display: none;">Return to Map</button>
+
+  <div id="conversation-btn">
+    <button onclick="toggleConversationView()">Conversation View</button>
+  </div>
+
+  <!-- Conversation View -->
+  <div id="conversation-view">
+    <button id="return-btn" onclick="returnToMap()">Return to Map</button>
+    <!-- Container for 3D agents -->
+    <div id="agent-3d-container"></div>
+    <!-- Chat UI area -->
+    <div id="chat-container">
+      <div id="chat-log"></div>
+      <div style="display: flex; align-items: center;">
+        <input type="text" id="chat-input" placeholder="Type a message...">
+        <button id="chat-send" onclick="sendMessage()">Send</button>
+      </div>
+      <div class="button-container">
+        <button id="start-interaction" onclick="startAgentInteraction()">Start Agent Interaction</button>
+        <button id="pause-interaction" onclick="pauseAgentInteraction()">Pause Interaction</button>
+        <button id="resume-interaction" onclick="resumeAgentInteraction()" style="display:none;">Resume Interaction</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Google Maps API -->
+  <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDd_u8UAQ8eYfBMm3iYvjNOJpBeIMo_XvA&callback=initMap"></script>
+  <script src="main.js"></script>
+</body>
+</html>
