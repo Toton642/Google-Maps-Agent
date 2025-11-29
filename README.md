@@ -1,6 +1,6 @@
 # Google-Maps-Agent
 
-https://692a41ef785986c725652562--melodic-naiad-5ce701.netlify.app/
+https://simulationagentgmaps.netlify.app/
 
 Steps to use:
 1. Click and open the above link.
@@ -19,3 +19,9 @@ so on..
 4. Return to map as required.
 
 Powered by Gemini API and Google Cloud TTS and made by Soumyadeep Nag on LLMs as Autonomous Agents in navigable abilities.
+
+If the link doesnot work.. please create a local isolated folder in your system, then upload index.html and main.js and a subfolder named "models" .. in the subfolder upload "agent1.glb", "agent2.glb".
+
+Then open VSCode or similar, then run the main.js server using node main.js in the terminal of the current directory (isolated folder) and open live server through index.html. 
+
+Thank you.
