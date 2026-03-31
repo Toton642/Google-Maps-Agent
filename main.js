@@ -572,7 +572,7 @@ function addToChatLog(sender, text) {
 // 7. Automated Agent-to-Agent Conversation and Pause/Resume
 //
 function callGemini(messages) {
-  const apiKey = "AIzaSyAhUSUlWvcrnnAlvFKu8kUcYgBtqMEWJjk";
+  const apiKey = "ookk";
   const url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=" + apiKey;
 
   // Format the conversation text
@@ -641,7 +641,7 @@ async function initTTS() {
       
       // Initialize the client
       await gapi.client.init({
-        apiKey: 'AIzaSyA91podbbNMTAXdcmtMV_h1Yaj1rlckUmk',
+        apiKey: 'ookk',
         discoveryDocs: ['https://texttospeech.googleapis.com/$discovery/rest?version=v1']
       });
 
