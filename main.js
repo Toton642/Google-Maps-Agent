@@ -524,7 +524,7 @@ function getStreetViewStaticUrl(lat, lng, heading = 235) {
   const fov = "fov=80";
   const pitch = "pitch=0";
   const head = `heading=${Math.round(heading)}`;
-  const key = "key=AIzaSyDd_u8UAQ8eYfBMm3iYvjNOJpBeIMo_XvA"; // Replace with a valid API key
+  const key = "key=AIzaSyA91podbbNMTAXdcmtMV_h1Yaj1rlckUmk"; // Replace with a valid API key
   return `${base}?${size}&${location}&${fov}&${pitch}&${head}&${key}`;
 }
 
@@ -572,7 +572,7 @@ function addToChatLog(sender, text) {
 // 7. Automated Agent-to-Agent Conversation and Pause/Resume
 //
 function callGemini(messages) {
-  const apiKey = "AIzaSyAKPLSO1olLhKCVXEfYtr2hvRqDEa87MfU";
+  const apiKey = "AIzaSyAhUSUlWvcrnnAlvFKu8kUcYgBtqMEWJjk";
   const url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=" + apiKey;
 
   // Format the conversation text
@@ -641,7 +641,7 @@ async function initTTS() {
       
       // Initialize the client
       await gapi.client.init({
-        apiKey: 'AIzaSyDd_u8UAQ8eYfBMm3iYvjNOJpBeIMo_XvA',
+        apiKey: 'AIzaSyA91podbbNMTAXdcmtMV_h1Yaj1rlckUmk',
         discoveryDocs: ['https://texttospeech.googleapis.com/$discovery/rest?version=v1']
       });
 
